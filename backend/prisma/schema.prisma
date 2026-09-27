@@ -1,0 +1,120 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String         @id @default(cuid())
+  name         String
+  email        String         @unique
+  passwordHash String
+  role         String         @default("mentee") // "mentee", "mentor", "admin"
+  avatarUrl    String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  mentorProfile MentorProfile?
+  queries       Query[]        @relation("MenteeQueries")
+  menteeSessions Session[]     @relation("MenteeSessions")
+  mentorSessions Session[]     @relation("MentorSessions")
+  sentMessages   Message[]      @relation("SentMessages")
+  givenReviews   Review[]       @relation("GivenReviews")
+  receivedReviews Review[]      @relation("ReceivedReviews")
+}
+
+model MentorProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline      String
+  company       String
+  bio           String
+  skills        String   // Stored as JSON array string, e.g. '["Distributed Systems","Kafka","System Design"]'
+  seniority     String   // e.g. "Staff Engineer", "VP of Eng", "Senior AI Researcher", "Principal"
+  hourlyRate    Float    // in INR/USD e.g. 1500
+  currency      String   @default("INR")
+  ratingAvg     Float    @default(5.0)
+  totalReviews  Int      @default(0)
+  totalSessions Int      @default(0)
+  availability  String   // JSON string, e.g. '["Weekdays 6-9 PM IST", "Weekends 10 AM - 4 PM IST"]'
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  matches       Match[]
+}
+
+model Query {
+  id             String   @id @default(cuid())
+  menteeId       String
+  mentee         User     @relation("MenteeQueries", fields: [menteeId], references: [id], onDelete: Cascade)
+  rawText        String
+  enhancedIntent String   // Stored as JSON string
+  createdAt      DateTime @default(now())
+
+  matches        Match[]
+  sessions       Session[]
+}
+
+model Match {
+  id             String        @id @default(cuid())
+  queryId        String
+  query          Query         @relation(fields: [queryId], references: [id], onDelete: Cascade)
+  mentorId       String
+  mentor         MentorProfile @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  matchScore     Float         // Percentage 0 - 100
+  matchBreakdown String        // JSON string explaining skill fit, seniority fit, rating, reasons
+  status         String        @default("suggested") // "suggested", "booked", "dismissed"
+  createdAt      DateTime      @default(now())
+}
+
+model Session {
+  id                String        @id @default(cuid())
+  queryId           String?
+  query             Query?        @relation(fields: [queryId], references: [id], onDelete: SetNull)
+  mentorId          String
+  mentor            User          @relation("MentorSessions", fields: [mentorId], references: [id], onDelete: Cascade)
+  menteeId          String
+  mentee            User          @relation("MenteeSessions", fields: [menteeId], references: [id], onDelete: Cascade)
+  status            String        @default("PENDING") // PENDING, PAID, COMPLETED, CANCELLED
+  topic             String
+  scheduledAt       DateTime?
+  amount            Float
+  currency          String        @default("INR")
+  razorpayOrderId   String?       @unique
+  razorpayPaymentId String?
+  razorpaySignature String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  messages          Message[]
+  review            Review?
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  text      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  sessionId String   @unique
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  mentorId  String
+  mentor    User     @relation("ReceivedReviews", fields: [mentorId], references: [id], onDelete: Cascade)
+  menteeId  String
+  mentee    User     @relation("GivenReviews", fields: [menteeId], references: [id], onDelete: Cascade)
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+}
