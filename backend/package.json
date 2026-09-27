@@ -1,0 +1,27 @@
+{
+  "name": "kore-server",
+  "version": "1.0.0",
+  "description": "KORE Backend - Pure JavaScript AI Mentorship Platform",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node src/index.js",
+    "start": "node src/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:seed": "node prisma/seed.js",
+    "test": "node tests/runAllTests.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.14.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "openai": "^4.47.1",
+    "prisma": "^5.14.0",
+    "razorpay": "^2.9.4",
+    "socket.io": "^4.7.5",
+    "zod": "^3.23.8"
+  }
+}
