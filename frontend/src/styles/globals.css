@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #08080a;
+  --foreground: #f8fafc;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Custom smooth dark & gold scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0d0d11;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ca8a04;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(250, 204, 21, 0.15), 0 0 30px rgba(0, 0, 0, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(250, 204, 21, 0.35), 0 0 50px rgba(234, 179, 8, 0.2);
+  }
+}
+
+.glow-box {
+  animation: pulseGlow 4s infinite ease-in-out;
+}
